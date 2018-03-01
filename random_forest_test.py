@@ -11,16 +11,28 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.datasets import make_classification
 import csv
+import time
+
+
 dat_tot = []
 with open('feature_data.csv', newline='') as csvfile:
         tot_data = csv.reader(csvfile, delimiter=',')
         for row in tot_data:
             dat_tot.append(row)
-y = []; X = []
-for sample in dat_tot:
-    y.append(sample[1])
-    X.append(sample[2:])
-clf = RandomForestClassifier(n_estimators = 1000)
-clf.fit(X,y)
-print(clf.feature_importances_)
-print(clf.predict([[dat_tot[0][2:]]]))
+predictions = []
+answers = [[dat_tot[i][1],dat_tot[i+1][1]] for i in range(0, len(dat_tot)-2, 2)]
+start_time = time.clock()
+for i in range(2, len(dat_tot), 2):
+    dat_tot = dat_tot[0:i+1] + dat_tot[i+2:]
+    y = []; X = []
+    for sample in dat_tot:
+        y.append(sample[1])
+        X.append(sample[2:])
+    clf = RandomForestClassifier(n_estimators = 1000)
+    clf.fit(X,y)
+    predictions.append(clf.predict([dat_tot[i][2:],dat_tot[i+1][2:]]))
+    time_passed = (time.clock()-start_time)/60
+    print (str(i/2) + " lesions tested in {:.3} minutes".format(time_passed))
+    remaining_time = time_passed/((i/2)*(76-(i/2)))
+    print ('Approximately {:.2} minutes remaining'.format(remaining_time))
+print(predictions)
