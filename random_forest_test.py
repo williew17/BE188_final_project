@@ -20,9 +20,9 @@ with open('feature_data.csv', newline='') as csvfile:
         for row in tot_data:
             dat_tot.append(row)
 predictions = []
-answers = [[dat_tot[i][1],dat_tot[i+1][1]] for i in range(0, len(dat_tot)-2, 2)]
+answers = [[dat_tot[i][1],dat_tot[i+1][1]] for i in range(0, len(dat_tot), 2)]
 start_time = time.clock()
-for i in range(2, len(dat_tot), 2):
+for i in range(2, len(dat_tot)-1, 2):
     dat_tot = dat_tot[0:i+1] + dat_tot[i+2:]
     y = []; X = []
     for sample in dat_tot:
