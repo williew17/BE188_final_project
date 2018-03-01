@@ -21,7 +21,6 @@ with open('feature_data.csv', newline='') as csvfile:
         for row in tot_data:
             dat_tot.append(row)
 predictions = []
-<<<<<<< HEAD
 answers = np.array([np.array([dat_tot[i][1],dat_tot[i+1][1]]) for i in range(0, len(dat_tot)-1, 2)])
 start_time = time.clock()
 for i in range(0, len(dat_tot)-1, 2):
@@ -42,11 +41,9 @@ print(predictions)
 print(answers)
 
 comparison = np.equal(predictions, answers)
-print(comparison)
 comparison = np.swapaxes(comparison,0,1)
 #this is the number of matches
 comparison = [np.sum([1 if b else 0 for b in a]) for a in comparison]
-print(comparison)
 =======
 answers = [[dat_tot[i][1],dat_tot[i+1][1]] for i in range(0, len(dat_tot)-1, 2)]
 if os.path.isfile('classifiers_trees={}.pkl'.format(100)):
@@ -75,4 +72,4 @@ else:
     with open('classifiers_trees={}.pkl'.format(100), 'wb') as fid:
         pickle.dump(clf_list, fid)
 print(predictions)
->>>>>>> ebd86865873a5df6b6378a5f61fae4df333d0a5a
+print(comparison)
