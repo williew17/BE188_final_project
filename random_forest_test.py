@@ -20,7 +20,7 @@ with open('feature_data.csv', newline='') as csvfile:
         for row in tot_data:
             dat_tot.append(row)
 predictions = []
-answers = [[dat_tot[i][1],dat_tot[i+1][1]] for i in range(0, len(dat_tot)-1, 2)]
+answers = np.array([np.array([dat_tot[i][1],dat_tot[i+1][1]]) for i in range(0, len(dat_tot)-1, 2)])
 start_time = time.clock()
 for i in range(0, len(dat_tot)-1, 2):
      dat_tot2 = dat_tot[0:i+1] + dat_tot[i+2:]
@@ -33,7 +33,15 @@ for i in range(0, len(dat_tot)-1, 2):
      predictions.append(clf.predict([dat_tot[i][2:],dat_tot[i+1][2:]]))
      time_passed = (time.clock()-start_time)/60
      print (str(i/2) + " lesions tested in {:.3} minutes".format(time_passed))
-     remaining_time = time_passed/(i/2 + 0.0001)*(76-(i/2))
+     remaining_time = time_passed/(i/2 + 0.01)*(76-(i/2))
      print ('Approximately {:.2} minutes remaining'.format(remaining_time))
+predictions = np.array(predictions)
 print(predictions)
 print(answers)
+
+comparison = np.equal(predictions, answers)
+print(comparison)
+comparison = np.swapaxes(comparison,0,1)
+#this is the number of matches
+comparison = [np.sum([1 if b else 0 for b in a]) for a in comparison]
+print(comparison)
