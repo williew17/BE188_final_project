@@ -35,4 +35,4 @@ for ac, se, sp, name in zip(acc,sens,spec,['Hyperplasic','Serrated','Adenoma']):
     print('Accuracy: {0:.2f}%'.format(round(ac*100,2)))
     print('Sensitivity: {0:.2f}%'.format(round(se*100,2)))
     print('Specificity: {0:.2f}%'.format(round(sp*100,2)))
-    print('==================')
+    print('===================')
