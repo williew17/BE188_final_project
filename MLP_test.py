@@ -11,6 +11,6 @@ from sklearn.neural_network import MLPClassifier as MLP
 #import _pickle as pickle
 
 def make_neural(hiddenlayersizes, X, Y, X2):
-    neural = MLPClassifier(hidden_layer_sizes=(hiddenlayersizes))
+    neural = MLP(hidden_layer_sizes=(hiddenlayersizes))
     neural.fit(X, Y)
     return neural.predict(X2)
