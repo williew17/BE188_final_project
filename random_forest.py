@@ -65,7 +65,7 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
     if os.path.isfile(FLAGS.cmode + '_' + str(folds) + '_folds_classifiers_trees={}.pkl'.format(FLAGS.n_trees)) and FLAGS.new_clfs!=True:
         predictions = predict_with_file(FLAGS.cmode + '_' + str(folds) + '_folds_classifiers_trees={}.pkl'.format(FLAGS.n_trees), dat_tot, start_time, FLAGS.cmode, folds)
     else:
-        predictions = make_classifiers_predict(dat_tot, start_time, folds, FLAGS.cmode, n_trees = 1000)
+        predictions = make_classifiers_predict(dat_tot, start_time, folds, FLAGS.cmode, n_trees = FLAGS.n_trees)
     
     #we get a bunch of predictions and then we want to convert it into accuracy calcs.
     predictions = np.array(predictions)

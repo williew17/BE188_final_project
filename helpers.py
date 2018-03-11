@@ -114,19 +114,20 @@ def multi_calc_model_stats(predictions, answers):
 def binary_calc_model_stats(predictions, answers):
     '''args: predictions: the list of predictions shape(76,2) for each lesion
              answers: the list of answers for each lesion
-       returns: acc: list of accuracy for the three states
-                sens: list of sensitivities for the three states
-                spec: list of specificities for the three states
+       returns: acc: accuracy for the two states
+                sens: sensitivity for the two states
+                spec: specificity for the two states
     '''
     #makes a confusion matrix 
     #[0-actual 0 ,  1-actual 0]
     #[0-actual 1 , 1 - actual 1]
     confu_matrix = np.zeros((2,2))
-    print(predictions)
-    print(answers)
-    print(confu_matrix)
     for predic, ans in zip(predictions, answers):
         for i in [0,1]:
             p,a = (int(predic[i]),int(ans[i]))
             confu_matrix[a,p]+=1
-    return confu_matrix
+    total = np.sum(confu_matrix)
+    acc = float(confu_matrix[0,0]+confu_matrix[1,1])/total
+    spec = confu_matrix[0,0]/float(confu_matrix[0,0]+confu_matrix[0,1])
+    sens = confu_matrix[1,1]/float(confu_matrix[1,0]+confu_matrix[1,1])
+    return acc, sens, spec
