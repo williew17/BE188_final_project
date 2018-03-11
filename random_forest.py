@@ -36,11 +36,12 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
     dat_tot = []
     with open(FLAGS.data_path, newline='') as csvfile:
             tot_data = csv.reader(csvfile, delimiter=',')
-            for indx, row in enumerate(tot_data):
-                row_in_float = [indx]
-                for data_pt in row[1:]:
-                    row_in_float.append(float(data_pt))
-                dat_tot.append(row_in_float)
+            #for indx, row in enumerate(tot_data):
+                #row_in_float = [indx]
+                #for data_pt in row[1:]:
+                    #row_in_float.append(float(data_pt))
+            for row in tot_data:
+                dat_tot.append([float(r) for r in row[1:]])
             print('Data read in successfully...')
     start_time = time.clock()
         
@@ -48,12 +49,12 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
     if FLAGS.cmode == 'binary':
         print('classifying benign vs malignant tumors...')
         for i in range(len(dat_tot)):
-            if dat_tot[i][1] != 1.0:
-                dat_tot[i][1] = 0.0
+            if dat_tot[i][0] != 1.0:
+                dat_tot[i][0] = 0.0
     else:
         print('classifying with multiple categories')
     #reads in the answers in a row for each row of the data
-    answers = np.array([np.array([dat_tot[i][1],dat_tot[i+1][1]]) for i in range(0, len(dat_tot)-1, 2)])
+    answers = np.array([np.array([dat_tot[i][0],dat_tot[i+1][0]]) for i in range(0, len(dat_tot)-1, 2)])
     
     #if we didnt give a fold number then we do LOOCV, change folds to the number of lesions
     if FLAGS.folds == -1:
