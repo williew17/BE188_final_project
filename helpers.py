@@ -27,7 +27,7 @@ def predict_with_file(filename, dat_tot, start_time, mode, folds):
     for i in range(len(clf_list)):
         test_list = clf_list[i][1]
         for lesion in test_list:
-            predictions.append(clf_list[i][0].predict([lesion[0][2:],lesion[1][2:]]))
+            predictions.append(clf_list[i][0].predict([lesion[0][1:],lesion[1][1:]]))
         if i%5 == 0:
             time_passed = (time.clock()-start_time)/60
             print (str(int(i)) + " lesions tested in {:.3} minutes".format(time_passed))
@@ -61,15 +61,15 @@ def make_classifiers_predict(dat_tot, start_time, folds, mode, n_trees = 1000):
             if row in kfold:
                 test_list.append((dat_tot[row],dat_tot[row+1]))
             else:
-                y.append(dat_tot[row][1])
-                y.append(dat_tot[row+1][1])
-                X.append(dat_tot[row][2:])
-                X.append(dat_tot[row+1][2:])
+                y.append(dat_tot[row][0])
+                y.append(dat_tot[row+1][0])
+                X.append(dat_tot[row][1:])
+                X.append(dat_tot[row+1][1:])
         clf = RandomForestClassifier(n_estimators = n_trees)
         clf.fit(X,y)
         clf_list.append((clf,test_list))
         for lesion in test_list:
-            predictions.append(clf.predict([lesion[0][2:],lesion[1][2:]]))
+            predictions.append(clf.predict([lesion[0][1:],lesion[1][1:]]))
         time_passed = (time.clock()-start_time)/60
         print(str((fold_number+1)*len(test_list)) + " lesions tested in {:.3} minutes".format(time_passed))
         remaining_time = time_passed/((fold_number+1)*len(test_list))*(76-((1+fold_number)*len(test_list)))
