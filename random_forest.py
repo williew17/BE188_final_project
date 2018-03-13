@@ -63,11 +63,12 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
         predictions, answers = make_classifiers_predict(dat_tot, start_time, folds, FLAGS.cmode, n_trees = FLAGS.n_trees)
     
     #we get a bunch of predictions and then we want to convert it into accuracy calcs.
-    predictions = np.array(predictions)
+    classifications = np.array([a[0] for a in predictions])
+    scores = np.array([b[1] for b in predictions])
     print('Calculating statistics...')
     
     if FLAGS.cmode == 'multi':
-        acc, sens, spec, tots = multi_calc_model_stats(predictions,answers)
+        acc, sens, spec, tots = multi_calc_model_stats(classifications,answers)
         for ac, se, sp, name in zip(acc,sens,spec,['Hyperplasic','Serrated','Adenoma']):
             print(name+ ' stats: ')
             print('Accuracy: {0:.2f}%'.format(round(ac*100,2)))
@@ -78,7 +79,7 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
         print('F1-Score: {0:.2f}'.format(round(tots[1]*100,2)))
         print('========================')
     else:
-        acc, sens, spec, f1 = binary_calc_model_stats(predictions,answers)
+        acc, sens, spec, f1 = binary_calc_model_stats(classifications,answers)
         print('Binary stats: ')
         print('Accuracy: {0:.2f}%'.format(round(acc*100,2)))
         print('Sensitivity: {0:.2f}%'.format(round(sens*100,2)))

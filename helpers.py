@@ -35,7 +35,7 @@ def predict_with_file(filename, dat_tot, start_time, mode, folds):
                 if sum(pred[:,col]) > max_col:
                     max_col = sum(pred[:,col])
                     max_i = col
-            predictions.append(clf_list[i][0].classes_[max_i])
+            predictions.append(clf_list[i][0].classes_[max_i], max_col/2.)
         if i%5 == 0:
             time_passed = (time.clock()-start_time)/60
             print (str(int(i*len(test_list))) + " lesions tested in {:.3} minutes".format(time_passed))
@@ -92,7 +92,7 @@ def make_classifiers_predict(dat_tot, start_time, folds, mode, n_trees = 1000):
                 if sum(pred[:,col]) > max_col:
                     max_col = sum(pred[:,col])
                     max_i = col
-            predictions.append(clf.classes_[max_i])
+            predictions.append((clf.classes_[max_i],max_col/2.))
         time_passed = (time.clock()-start_time)/60
         print(str((fold_number+1)*len(test_list)) + " lesions tested in {:.3} minutes".format(time_passed))
         remaining_time = time_passed/((fold_number+1)*len(test_list))*(76-((1+fold_number)*len(test_list)))
@@ -119,7 +119,7 @@ def multi_calc_model_stats(predictions, answers):
     print('Confusion Matrix: ')
     print(confu_matrix)
     total = np.sum(confu_matrix)
-    tots = [(confu_matrix[0,0]+confu_matrix[1,1]+confu_matrix[2,2])/total,mt.f1_score(answers,predictions)]
+    tots = [(confu_matrix[0,0]+confu_matrix[1,1]+confu_matrix[2,2])/total,mt.f1_score(answers,predictions,labels=[0,1,2],average='micro')]
     Hyp = [0,0,0,0]
     Ser = [0,0,0,0]
     Aden = [0,0,0,0]
