@@ -67,13 +67,16 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
     print('Calculating statistics...')
     
     if FLAGS.cmode == 'multi':
-        acc, sens, spec = multi_calc_model_stats(predictions,answers)
+        acc, sens, spec, tots = multi_calc_model_stats(predictions,answers)
         for ac, se, sp, name in zip(acc,sens,spec,['Hyperplasic','Serrated','Adenoma']):
             print(name+ ' stats: ')
             print('Accuracy: {0:.2f}%'.format(round(ac*100,2)))
             print('Sensitivity: {0:.2f}%'.format(round(se*100,2)))
             print('Specificity: {0:.2f}%'.format(round(sp*100,2)))
             print('===================')
+        print('Overall accuracy: {0:.2f}%'.format(round(tots[0]*100,2)))
+        print('F1-Score: {0:.2f}'.format(round(tots[1]*100,2)))
+        print('========================')
     else:
         acc, sens, spec, f1 = binary_calc_model_stats(predictions,answers)
         print('Binary stats: ')

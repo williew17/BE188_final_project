@@ -59,7 +59,7 @@ def make_classifiers_predict(dat_tot, start_time, folds, mode, n_trees = 1000):
              mode: whether multi or binary
    returns: the list of predictions for every row in dat_tot
     '''
-    dat_tot = sample(dat_tot, k=len(dat_tot)) #scramble the data so kfold is legit    
+    #dat_tot = sample(dat_tot, k=len(dat_tot)) #scramble the data so kfold is legit    
     
     #reads in the answers in a row for each row of the data
     answers = np.array([dat_tot[i][0] for i in range(0, len(dat_tot)-1, 2)])
@@ -106,6 +106,7 @@ def multi_calc_model_stats(predictions, answers):
        returns: acc: list of accuracy for the three states
                 sens: list of sensitivities for the three states
                 spec: list of specificities for the three states
+                tots: list of overall acc in [0] and f1 score in [1]
     '''
     #Hyp == 1 Ser ==2 Aden ==3
     #1 is true positive, true negative, false positive, false negative 
