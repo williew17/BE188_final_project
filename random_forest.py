@@ -12,6 +12,8 @@ import time
 import os
 import argparse
 from helpers import *
+import sklearn.metrics as mt
+import matplotlib.pyplot as plt
 #from helpers import predict_with_file
 #from helpers import make_classifiers_predict
 #from helpers import calc_model_stats
@@ -64,7 +66,7 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
     
     #we get a bunch of predictions and then we want to convert it into accuracy calcs.
     classifications = np.array([a[0] for a in predictions])
-    scores = np.array([b[1] for b in predictions])
+    scores = np.array([b[1] if b[0] == 0 else 1-b[1] for b in predictions ])
     print('Calculating statistics...')
     
     if FLAGS.cmode == 'multi':
@@ -86,5 +88,19 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
         print('Specificity: {0:.2f}%'.format(round(spec*100,2)))
         print('F1-Score: {0:.2f}'.format(round(f1,2)))
         print('===================')
+        
+        fpr, tpr, x = mt.roc_curve(answers,scores)
+        roc_auc = mt.auc(fpr,tpr)
+        lw = 2
+        plt.plot(fpr, tpr, color='darkorange')
+                # lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Receiver operating characteristic example')
+        plt.legend(loc="lower right")
+        plt.savefig
         
     
