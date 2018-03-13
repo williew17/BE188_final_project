@@ -21,7 +21,6 @@ def predict_with_file(filename, dat_tot, start_time, mode, folds):
             mode: whether multi or binary
        returns: the list of predictions for every row in dat_tot
     '''
-    dat_tot = sample(dat_tot, k=len(dat_tot)) #scramle dat_tot so kfold is legit
     predictions = []
     clf_list = []
     answers = []
@@ -47,9 +46,8 @@ def predict_with_file(filename, dat_tot, start_time, mode, folds):
     return predictions, answers
 
 def split(row_indcs, folds):
-    shuffled_row_indcs = row_indcs
     k, m = divmod(len(row_indcs), folds)
-    return (shuffled_row_indcs[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(folds))
+    return (row_indcs[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(folds))
 
 def make_classifiers_predict(dat_tot, start_time, folds, mode, n_trees = 1000):
     '''args: dat_tot: the data you are predicting on (for this function it holds the answers)
@@ -58,12 +56,18 @@ def make_classifiers_predict(dat_tot, start_time, folds, mode, n_trees = 1000):
              n_trees: the number of trees in the forest, defaults to 1000
              mode: whether multi or binary
    returns: the list of predictions for every row in dat_tot
-    '''
-    #dat_tot = sample(dat_tot, k=len(dat_tot)) #scramble the data so kfold is legit    
-    
+    '''    
+    doubled_data = []
+    for ii in range(0,len(dat_tot)-1,2):
+        doubled_data.append((dat_tot[ii],dat_tot[ii+1]))
+    doubled_data = sample(doubled_data, k=len(doubled_data))
+    dat_scrambled = []
+    for tup in doubled_data:
+        dat_scrambled.append(tup[0])
+        dat_scrambled.append(tup[1])
+    dat_tot = dat_scrambled
     #reads in the answers in a row for each row of the data
-    answers = np.array([dat_tot[i][0] for i in range(0, len(dat_tot)-1, 2)])
-    
+    answers = np.array([dat_tot[i][0] for i in range(0, len(dat_tot)-1,2)])
     predictions = []
     clf_list = []
     k_fold_list = split(list(range(0,len(dat_tot)-1,2)),folds)
@@ -115,7 +119,7 @@ def multi_calc_model_stats(predictions, answers):
     print('Confusion Matrix: ')
     print(confu_matrix)
     total = np.sum(confu_matrix)
-    
+    tots = [(confu_matrix[0,0]+confu_matrix[1,1]+confu_matrix[2,2])/total,mt.f1_score(answers,predictions)]
     Hyp = [0,0,0,0]
     Ser = [0,0,0,0]
     Aden = [0,0,0,0]
@@ -134,7 +138,7 @@ def multi_calc_model_stats(predictions, answers):
     acc = [(c[0]+c[1])/sum(c) for c in Stats]
     sens = [c[0]/(c[0]+c[3]) for c in Stats]
     spec = [c[1]/(c[1]+c[2]) for c in Stats]
-    return acc,sens,spec
+    return acc,sens,spec,tots
 
 def binary_calc_model_stats(predictions, answers):
     '''args: predictions: the list of predictions shape(76,2) for each lesion
