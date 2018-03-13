@@ -35,7 +35,7 @@ def predict_with_file(filename, dat_tot, start_time, mode, folds):
                 if sum(pred[:,col]) > max_col:
                     max_col = sum(pred[:,col])
                     max_i = col
-            predictions.append(clf_list[i][0].classes_[max_i], max_col/2.)
+            predictions.append((clf_list[i][0].classes_[max_i], max_col/2.))
         if i%5 == 0:
             time_passed = (time.clock()-start_time)/60
             print (str(int(i*len(test_list))) + " lesions tested in {:.3} minutes".format(time_passed))
