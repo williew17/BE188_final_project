@@ -101,20 +101,20 @@ if FLAGS.cmode == 'binary':
     predictions = [1 if ff[0] > 0 else 0 for f in test_pair_predictions for ff in f]
     answers = [1 if aa == 1 else 0 for a in test_pair_answers for aa in a]
     acc, sens, spec, f1 = binary_calc_model_stats(predictions, answers)
+    print('F1 Score: {0:.2f}%'.format(round(f1*100,2)))
     print('Accuracy: {0:.2f}%'.format(round(acc*100,2)))
     print('Sensitivity: {0:.2f}%'.format(round(sens*100,2)))
     print('Specificity: {0:.2f}%'.format(round(spec*100,2)))
-    print('F1 Score: {0:.2f}%'.format(round(f1*100,2)))
     print('===================')
 
 if FLAGS.cmode == 'multi':
     predictions = [np.argmax(f) + 1 for f in test_pair_predictions for ff in f]
-    answers = test_pair_answers
-    for i in range(len(predictions)):
-        acc, sens, spec = multi_calc_model_stats(predictions[i], answers)
-        for ac, se, sp, name in zip(acc,sens,spec,['Hyperplasic','Serrated','Adenoma']):
-            print(name+ ' stats: ')
-            print('Accuracy: {0:.2f}%'.format(round(ac*100,2)))
-            print('Sensitivity: {0:.2f}%'.format(round(se*100,2)))
-            print('Specificity: {0:.2f}%'.format(round(sp*100,2)))
-            print('===================')
+    acc, sens, spec, tots = multi_calc_model_stats(predictions, pair_answers)
+    print('Total Accuracy: {0:.2f}%'.format(round(tots[0]*100)))
+    print('F1 Score: {0:.2f}%'.format(round(tots[1]*100,2)))
+    for ac, se, sp, name in zip(acc,sens,spec,['Hyperplasic','Serrated','Adenoma']):
+        print(name+ ' stats: ')
+        print('Accuracy: {0:.2f}%'.format(round(ac*100,2)))
+        print('Sensitivity: {0:.2f}%'.format(round(se*100,2)))
+        print('Specificity: {0:.2f}%'.format(round(sp*100,2)))
+        print('===================')
