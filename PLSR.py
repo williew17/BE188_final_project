@@ -9,31 +9,22 @@ import sklearn.cross_decomposition as skcd
 import numpy as np
 import csv
 import argparse
+from random import shuffle
 from helpers import *
 
-    def check_output_by_twos(array,axis):
-    '''Use powers of two to see if multiple classifications exist for a datapoint.
-    Input: an n-d list of booleans, the axis to compress over 
-    Output: a list combined over the axis, where the 1st True adds 1, the 2nd True adds 2, etc.'''
+#move to helpers.py later
+class FlagError(Exception):
+    def __init__(self, message):
+        self.message = message
 
-    if axis > 0:
-            yield from check_output_by_twos(array, axis-1)
-    else:
-        try:
-            iter(array)
-            for a in len(array):
-                yield check_output_by_twos(array[a], axis-1, a)
-        except TypeError:
-                yield 2**a if array else 0
-
+#cmd line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--cmode', type = str, default = 'binary', help = 'chooses binary vs multi classification mode')
-parser.add_argument('--folds', type = int, default = -1, help = 'chooses the amount folds for cross validation')
+parser.add_argument('--folds', type = int, default = -1, help = 'chooses the amount folds for cross validation. Default is LOOCV')
+parser.add_argument('--components', type = int, default = 25, help = 'number of principal components in the model')
 FLAGS = parser.parse_args()
 
-models = [skcd.PLSRegression(n) for n in [3,30]]
-classes = ['Hyp (b)', 'Ser (m)', 'Ade (m)']
-
+#load data
 feature_data=[]
 with open('feature_data.csv', newline='') as csvfile:
         data_reader = csv.reader(csvfile, delimiter=',')
@@ -41,34 +32,76 @@ with open('feature_data.csv', newline='') as csvfile:
             feature_data.append([int(row[1])] + [float(r) for r in row[2:]])
         print('Data read in successfully...')
 
+#check input flags
+if FLAGS.cmode != 'binary' and FLAGS.cmode != 'multi':
+    raise FlagError('Only binary and multi modes are available.')
+if FLAGS.folds > len(feature_data)//2 or FLAGS.folds < -1:
+    raise FlagError('Folds must be >=-1 (LOOCV) and <= length of data.')
+if FLAGS.components > len(feature_data)//2 or FLAGS.components < 1 :
+    raise FlagError('Components must be > 0 and <= length of data.')
+
+#benign and malignant classes
+classes = ['Hyp (b)', 'Ser (m)', 'Ade (m)']
+#number of PC in models
+model = skcd.PLSRegression(FLAGS.components)
+
+#pair indicates that the 2 rows were combined into one
+pair_data = [feature_data[i][1:] + feature_data[i+1][1:] for i in range(0, len(feature_data)-1, 2)]
+pair_modified_answers = []
+
 #multiclass prediction is 3 runs of PLSR-DA, for x vs. not-x
 #for binary, only check the first run of hyp vs. not-hyp
-#pair indicates that the 2 rows were combined into one
-pair_modified_answers = []
-pair_data = [feature_data[i][1:] + feature_data[i+1][1:] for i in range(0, len(feature_data)-1, 2)]
-pair_predictions = []
-
+#3 different sets of answers for each type of classification
 for i in range(len(classes)):
         pair_modified_answers.append([1 if feature_data[j][0] == (i+1) else -1 for j in range(0,len(feature_data)-1, 2)])
-for c in range(len(classes)):
-    pp=[]
-    for m in models:
-        m.fit(pair_data, pair_modified_answers[c])
-        pp.append(np.squeeze(m.predict(pair_data)))
-    pair_predictions.append(pp)
 
-print(pair_predictions[0])
-#convert numbers (floats) to classes(ints) from cutoff of 0
-cutoff=0
-pair_predicted_classes = [[[True if ppp > cutoff else False for ppp in pp] for pp in p] for p in pair_predictions]
+fold_quantity = FLAGS.folds if FLAGS.folds != -1 else len(pair_data)
 
-print(check_output_by_twos(pair_predicted_classes, 0))
+#randomly choose folds for each lesion, approx. equal sizes
+folds = [[] for a in range(fold_quantity)]
+fold_membership = [i%fold_quantity for i in range(len(pair_data))]
+shuffle(fold_membership)
+for b in range(len(fold_membership)):
+        folds[fold_membership[b]].append(b)
 
-#for i in range(len(predictions)):
-#    acc, sens, spec = multi_calc_model_stats(predictions[i], answers)
-#    for ac, se, sp, name in zip(acc,sens,spec,['Hyperplasic','Serrated','Adenoma']):
-#        print(name+ ' stats: ')
-#        print('Accuracy: {0:.2f}%'.format(round(ac*100,2)))
-#        print('Sensitivity: {0:.2f}%'.format(round(se*100,2)))
-#        print('Specificity: {0:.2f}%'.format(round(sp*100,2)))
-#        print('===================')
+#make predictions for each fold and each class
+test_pair_predictions = []
+for f in range(fold_quantity):
+    
+    fold_test_pair_predictions = []
+    for c in range(len(classes)):
+        
+        #set training data
+        training_pair_data = pair_data[folds[f]]
+        training_pair_modified_answers = pair_modified_answers[c][folds[f]]
+        
+        #set test data
+        test_fold = [i for i in range(len(pair_data)) if i not in folds[f]]
+        test_pair_data = pair_data[test_fold]
+        test_pair_modified_answers = pair_modified_answers[c][test_fold]
+        
+        #fit model to training data, predict
+        model.fit(training_pair_data, training_pair_modified_answers)
+        fold_test_pair_predictions.append(np.squeeze(model.predict(test_pair_data)))
+        
+    test_pair_predictions.append(fold_test_pair_predictions)
+    
+#find which class has the highest predicted value
+if FLAGS.cmode == 'binary':
+    predictions = [[1 if l[0] > cutoff[0] else 0 for l in m] for m in test_pair_predictions]
+    acc, sens, spec, f1 = binary_calc_model_stats(predictions, answers)
+    print('Accuracy: {0:.2f}%'.format(round(acc*100,2)))
+    print('Sensitivity: {0:.2f}%'.format(round(sens*100,2)))
+    print('Specificity: {0:.2f}%'.format(round(spec*100,2)))
+    print('F1 Score: {0:.2f}%'.format(round(f1*100,2)))
+    print('===================')
+
+if FLAGS.cmode == 'multi':
+    for i in range(len(predictions)):
+        acc, sens, spec = multi_calc_model_stats(predictions[i], answers)
+        for ac, se, sp, name in zip(acc,sens,spec,['Hyperplasic','Serrated','Adenoma']):
+            print(name+ ' stats: ')
+            print('Accuracy: {0:.2f}%'.format(round(ac*100,2)))
+            print('Sensitivity: {0:.2f}%'.format(round(se*100,2)))
+            print('Specificity: {0:.2f}%'.format(round(sp*100,2)))
+            print('===================')
