@@ -99,7 +99,7 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('Receiver operating characteristic example')
+        plt.title('Receiver operating characteristic')
         plt.legend(loc="lower right")
         plt.savefig('roc_curve_random_forest.png')
         
