@@ -92,15 +92,16 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
         fpr, tpr, x = mt.roc_curve(answers,scores,pos_label=0)
         roc_auc = mt.auc(fpr,tpr)
         lw = 2
-        plt.plot(fpr, tpr, color='darkorange',
+        fig = plt.figure(figsize=(10,8))
+        plt.plot(fpr, tpr, color='#D23369',
                 lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
-        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+        plt.plot([0, 1], [0, 1], color='0.3', lw=lw, linestyle='--')
         plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.05])
+        plt.ylim([0.0, 1.0])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('Receiver operating characteristic')
+        plt.title('Receiver Operating Characteristic')
         plt.legend(loc="lower right")
-        plt.savefig('roc_curve_random_forest.png')
+        plt.savefig('roc_curve_random_forest2.png', dpi=400)
         
     

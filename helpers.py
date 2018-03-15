@@ -43,7 +43,7 @@ def predict_with_file(filename, dat_tot, start_time, mode, folds):
             print ('Approximately {:.2} minutes remaining'.format(remaining_time))
     time_passed = (time.clock()-start_time)/60
     print('Done in {:.3} minutes'.format(time_passed))
-    return predictions, answers, stats
+    return predictions, answers
 
 def split(row_indcs, folds):
     k, m = divmod(len(row_indcs), folds)
