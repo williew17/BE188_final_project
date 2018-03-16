@@ -48,19 +48,18 @@ if __name__ == "__main__":
 
         clf = RandomForestClassifier(warm_start=True, oob_score=True, random_state=123)
 
-        '''
-        d_tree = clf.estimators_[0]
-        dot_data = tree.export_graphviz(d_tree, out_file='tree.dot', 
-                             class_names=['malignant', 'benign'],  
-                             filled=True, rounded=True)
-        graph = graphviz.Source(dot_data) 
-        '''
-
-        error_rate = []
         min_estimators= 20; max_estimators = 1100
         for i in range(min_estimators, max_estimators + 1,10):
             clf.set_params(n_estimators=i)
             clf.fit(X, y)
+            '''
+            d_tree = clf.estimators_[0]
+            dot_data = tree.export_graphviz(d_tree, out_file='random_forest_figures/tree_{}.dot'.format(i), 
+                                 class_names=['malignant', 'benign'],  
+                                 filled=True, rounded=True)
+            graph = graphviz.Source(dot_data) 
+            '''
+            error_rate = []
             # Record the OOB error for each `n_estimators=i` setting.
             oob_error = 1 - clf.oob_score_
             error_rate.append(oob_error)
@@ -72,9 +71,9 @@ if __name__ == "__main__":
     ys= []
     for column in full_list.T:
         ys.append(np.average(column))
-    plt.plot(xs, ys)
+    plt.plot(xs, ys, color='#D23369')
     
     plt.xlim(min_estimators, max_estimators)
     plt.xlabel("n_estimators")
     plt.ylabel("OOB error rate")
-    plt.show()
+    plt.savefig('random_forest_figures/oob_vs_n_trees.png')

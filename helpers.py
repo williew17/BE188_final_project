@@ -13,96 +13,13 @@ import _pickle as pickle
 from random import sample
 import sklearn.metrics as mt
 
-def predict_with_file(filename, dat_tot, start_time, mode, folds):
-    '''args: filename: string with the file holding your classifiers
-            dat_tot: the data you are predicting on (for this function it holds the answers)
-            start_time: mainly for output updates but the time the function started
-            folds: the number of folds during cross validation
-            mode: whether multi or binary
-       returns: the list of predictions for every row in dat_tot
-    '''
-    predictions = []
-    clf_list = []
-    answers = []
-    with open(filename, 'rb') as fid: #open the pkl file with our classifiers and their matching test lesions
-            clf_list, answers = pickle.load(fid)
-    for i in range(len(clf_list)):
-        test_list = clf_list[i][1]
-        for lesion in test_list: #we go through every lesion in the list
-            pred = clf_list[i][0].predict_proba([lesion[0][1:],lesion[1][1:]])
-            max_col = 0; max_i = -1
-            for col in range(pred.shape[1]):
-                if sum(pred[:,col]) > max_col:
-                    max_col = sum(pred[:,col])
-                    max_i = col
-            predictions.append((clf_list[i][0].classes_[max_i], max_col/2.))
-        if i%5 == 0:
-            time_passed = (time.clock()-start_time)/60
-            print (str(int(i*len(test_list))) + " lesions tested in {:.3} minutes".format(time_passed))
-            remaining_time = time_passed/(i*len(test_list)+1)*(76-i*len(test_list)+1)
-            print ('Approximately {:.2} minutes remaining'.format(remaining_time))
-    time_passed = (time.clock()-start_time)/60
-    print('Done in {:.3} minutes'.format(time_passed))
-    return predictions, answers
+class FlagError(Exception):
+    def __init__(self, message):
+        self.message = message
 
 def split(row_indcs, folds):
     k, m = divmod(len(row_indcs), folds)
     return (row_indcs[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(folds))
-
-def make_classifiers_predict(dat_tot, start_time, folds, mode, n_trees = 1000):
-    '''args: dat_tot: the data you are predicting on (for this function it holds the answers)
-             start_time: mainly for output updates but the time the function started
-             folds: the number of folds during cross validations
-             n_trees: the number of trees in the forest, defaults to 1000
-             mode: whether multi or binary
-   returns: the list of predictions for every row in dat_tot
-    '''    
-    doubled_data = []
-    for ii in range(0,len(dat_tot)-1,2):
-        doubled_data.append((dat_tot[ii],dat_tot[ii+1]))
-    doubled_data = sample(doubled_data, k=len(doubled_data))
-    dat_scrambled = []
-    for tup in doubled_data:
-        dat_scrambled.append(tup[0])
-        dat_scrambled.append(tup[1])
-    dat_tot = dat_scrambled
-    #reads in the answers in a row for each row of the data
-    answers = np.array([dat_tot[i][0] for i in range(0, len(dat_tot)-1,2)])
-    predictions = []
-    clf_list = []
-    k_fold_list = split(list(range(0,len(dat_tot)-1,2)),folds)
-    for fold_number, kfold in enumerate(k_fold_list):
-        test_list = []
-        y=[]; X= []
-        for row in range(0,len(dat_tot)-1,2):
-            if row in kfold:
-                test_list.append((dat_tot[row],dat_tot[row+1]))
-            else:
-                y.append(dat_tot[row][0])
-                y.append(dat_tot[row+1][0])
-                X.append(dat_tot[row][1:])
-                X.append(dat_tot[row+1][1:])
-        clf = RandomForestClassifier(n_estimators = n_trees)
-        clf.fit(X,y)
-        clf_list.append((clf,test_list))
-        for lesion in test_list:
-            pred = clf.predict_proba([lesion[0][1:],lesion[1][1:]])
-            max_col = 0; max_i = -1
-            for col in range(pred.shape[1]):
-                if sum(pred[:,col]) > max_col:
-                    max_col = sum(pred[:,col])
-                    max_i = col
-            predictions.append((clf.classes_[max_i],max_col/2.))
-        time_passed = (time.clock()-start_time)/60
-        print(str((fold_number+1)*len(test_list)) + " lesions tested in {:.3} minutes".format(time_passed))
-        remaining_time = time_passed/((fold_number+1)*len(test_list))*(76-((1+fold_number)*len(test_list)))
-        print ('Approximately {:.2} minutes remaining'.format(remaining_time))
-    with open(mode + '_' + str(folds) + '_folds_classifiers_trees={}.pkl'.format(n_trees), 'wb') as fid:
-        pickle.dump((clf_list,answers), fid)
-    time_passed = (time.clock()-start_time)/60
-    print('Done in {:.3} minutes'.format(time_passed))
-    return predictions, answers
-    
 
 def multi_calc_model_stats(predictions, answers):
     '''args: predictions: the list of predictions shape(76,2) for each lesion
@@ -119,7 +36,8 @@ def multi_calc_model_stats(predictions, answers):
     print('Confusion Matrix: ')
     print(confu_matrix)
     total = np.sum(confu_matrix)
-    tots = [(confu_matrix[0,0]+confu_matrix[1,1]+confu_matrix[2,2])/total,mt.f1_score(answers,predictions,labels=[0,1,2],average='micro')]
+    tots = [(confu_matrix[0,0]+confu_matrix[1,1]+confu_matrix[2,2])/total,
+            mt.fbeta_score(answers,predictions,labels=[0,1,2],beta=2,average='micro')]
     Hyp = [0,0,0,0]
     Ser = [0,0,0,0]
     Aden = [0,0,0,0]
@@ -158,5 +76,5 @@ def binary_calc_model_stats(predictions, answers):
     acc = float(confu_matrix[0,0]+confu_matrix[1,1])/total
     spec = confu_matrix[0,0]/float(confu_matrix[0,0]+confu_matrix[0,1])
     sens = confu_matrix[1,1]/float(confu_matrix[1,0]+confu_matrix[1,1])
-    f1 = mt.f1_score(answers,predictions)
-    return acc, sens, spec, f1
+    f1 = mt.fbeta_score(answers,predictions, beta=2)
+    return acc, sens, spec, f2

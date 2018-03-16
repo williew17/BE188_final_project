@@ -14,11 +14,8 @@ import matplotlib.pyplot as plt
 import sklearn.metrics as mt
 
 from helpers import multi_calc_model_stats, binary_calc_model_stats
+from helpers import FlagError
 
-#move to helpers.py later
-class FlagError(Exception):
-    def __init__(self, message):
-        self.message = message
 
 def PLS_DA(cmode, fold_quantity, components):
 
