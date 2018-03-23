@@ -19,5 +19,7 @@ Analysis of GI lesions from Mesejo et al.
 3. Last 200 attributes: 3D SHAPE FEATURES 
   - 100 shapeDNA 
   - 100 KPCA
-
+### How to run
+Instructions should be foud within comments in the code, but each classifer has its own python file, either PLSR.py or random_forest.py
+running either of those files with python3 should run the default config for each classifier, If different modes are wanted, refer to the help section '--help' for the different types of modes available and how to use them.
 
