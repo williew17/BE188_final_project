@@ -14,6 +14,9 @@ import argparse
 from helpers import *
 import sklearn.metrics as mt
 import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from random import sample
+import _pickle as pickle
 #from helpers import predict_with_file
 #from helpers import make_classifiers_predict
 #from helpers import calc_model_stats
