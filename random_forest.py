@@ -64,7 +64,7 @@ def make_classifiers_predict(dat_tot, start_time, folds, mode, n_trees = 1000):
         #time tracking code
         time_passed = (time.clock()-start_time)/60
         print(str(fold_number+1) + " folds made in {:.3} minutes".format(time_passed))
-        remaining_time = time_passed/(fold_number+1))*(folds-1+fold_number)
+        remaining_time = time_passed/(fold_number+1)*(folds-1+fold_number)
         print ('Approximately {:.2} minutes remaining'.format(remaining_time))
         
     with open(mode + '_' + str(folds) + '_folds_classifiers_trees={}.pkl'.format(n_trees), 'wb') as fid:
@@ -151,7 +151,7 @@ Gastrointestinal Lesion Classifier (by Willie Wu and Linus Chen): Random Forest
     pkl_file_name = FLAGS.cmode + '_' + str(folds) + '_folds_classifiers_trees={}.pkl'.format(FLAGS.n_trees)
     #if the file doesnt exist then make it
     if os.path.isfile(pkl_file_name)==False or FLAGS.new_clfs:
-        make_classifiers(dat_tot, start_time, folds, FLAGS.cmode, n_trees = FLAGS.n_trees)
+        make_classifiers_predict(dat_tot, start_time, folds, FLAGS.cmode, n_trees = FLAGS.n_trees)
     #use the file
     predictions, answers = predict_with_file(pkl_file_name,dat_tot, start_time, FLAGS.cmode, folds)
     

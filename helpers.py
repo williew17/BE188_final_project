@@ -76,5 +76,5 @@ def binary_calc_model_stats(predictions, answers):
     acc = float(confu_matrix[0,0]+confu_matrix[1,1])/total
     spec = confu_matrix[0,0]/float(confu_matrix[0,0]+confu_matrix[0,1])
     sens = confu_matrix[1,1]/float(confu_matrix[1,0]+confu_matrix[1,1])
-    f1 = mt.fbeta_score(answers,predictions, beta=2)
+    f2 = mt.fbeta_score(answers,predictions, beta=2)
     return acc, sens, spec, f2
